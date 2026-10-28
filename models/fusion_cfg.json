@@ -1,0 +1,33 @@
+{
+ "null_q": 0.999,
+ "tpl_thr": 0.1,
+ "syn_sed": true,
+ "syn_overlap": 0.0,
+ "sed_syn": {
+  "mode": "agnostic",
+  "thr": 0.85,
+  "med": 3,
+  "min_dur": 0.1,
+  "gap": 0.04
+ },
+ "sed_nat": {
+  "mode": "split",
+  "thr": 0.4,
+  "med": 5,
+  "min_dur": 0.1,
+  "gap": 0.1,
+  "iou": 0.5,
+  "o_thr": 0.2,
+  "o_med": 5,
+  "o_min_dur": 0.5,
+  "o_gap": 2.5,
+  "o_dil": 0.0,
+  "o_snap": 0.3
+ },
+ "val_oof_score": {
+  "event_f1": 0.6279561235785448,
+  "segment_dice": 0.7125835263310503,
+  "combined_score": 1.3405396499095952
+ },
+ "tags": "wsA,wm"
+}

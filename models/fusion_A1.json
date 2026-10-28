@@ -1,0 +1,38 @@
+{
+ "null_q": 0.999,
+ "tpl_thr": 0.1,
+ "syn_sed": true,
+ "syn_overlap": 0.0,
+ "sed_syn": {
+  "mode": "agnostic",
+  "thr": 0.7,
+  "med": 3,
+  "min_dur": 0.1,
+  "gap": 0.04
+ },
+ "sed_nat": {
+  "mode": "rel_split",
+  "thr_det": 0.3,
+  "alpha": 0.6,
+  "floor": 0.2,
+  "med": 7,
+  "min_dur": 0.1,
+  "gap": 0.1,
+  "o_thr_det": 0.3,
+  "o_alpha": 0.5,
+  "o_floor": 0.2,
+  "o_med": 7,
+  "o_min_dur": 0.1,
+  "o_gap": 1.5,
+  "o_dil": 0.0,
+  "o_snap": 0.0,
+  "iou": 0.5
+ },
+ "val_oof_score": {
+  "event_f1": 0.6774,
+  "segment_dice": 0.7692,
+  "combined_score": 1.4466
+ },
+ "tags": "wsA:0.5,wlP:3,aA:0.5,wlH:2,wlH2:6,wlH3:1,wlHS:6,aH:8",
+ "recovered_from": "cache/queue_eval_aH.log lines 68-78 (tune_rel cfg, tune_fusion_fixed fusion best) on 2026-09-15 after the original file was deleted by a cleanup; values are the ones that produced the v14 submission 924220"
+}

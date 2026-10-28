@@ -1,0 +1,15 @@
+cache/
+data/
+submission/
+work/
+__pycache__/
+*.pyc
+docs/*.aux
+docs/*.log
+docs/*.out
+models/whisper-*/
+models/ast-*/
+models/dasheng-*/
+models/BEATs_*.pt
+models/ast_ftgru_*.pt
+models/beats_ftgru_*.pt

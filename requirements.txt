@@ -1,0 +1,11 @@
+# Track 1 training + inference (tested with Python 3.13.6, PyTorch 2.14.0+cu126, CUDA 12.6, RTX 4060 Laptop 8 GB;
+# the retrain and the frozen-member reproduction ran on Kaggle's default GPU image of October 2026, 2x Tesla T4)
+torch>=2.4            # CUDA build
+numpy>=2.0
+scipy>=1.13           # Dasheng log-mel resampling, Silver extraction
+soundfile>=0.12
+scikit-learn>=1.5     # GroupKFold
+transformers>=4.45    # Whisper, AST and Dasheng encoders (trust_remote_code for Dasheng)
+huggingface_hub>=0.25 # backbone download; hf_data.py / hf_extract.py read the gated Vaani noise-event dataset
+safetensors>=0.4
+pyarrow>=15           # hf_data.py / Silver extraction (parquet / arrow shards)

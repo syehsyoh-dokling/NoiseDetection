@@ -1,0 +1,34 @@
+{
+ "null_q": 0.999,
+ "tpl_thr": 0.1,
+ "syn_sed": true,
+ "syn_overlap": 0.0,
+ "sed_syn": {
+  "mode": "agnostic",
+  "thr": 0.7,
+  "med": 3,
+  "min_dur": 0.1,
+  "gap": 0.04
+ },
+ "sed_nat": {
+  "mode": "rel_split",
+  "thr_det": 0.32,
+  "alpha": 0.6,
+  "floor": 0.2,
+  "med": 11,
+  "min_dur": 0.1,
+  "gap": 0.1,
+  "o_thr_det": 0.3,
+  "o_alpha": 0.5,
+  "o_floor": 0.2,
+  "o_med": 7,
+  "o_min_dur": 0.1,
+  "o_gap": 1.5,
+  "o_dil": 0.0,
+  "o_snap": 0.0,
+  "iou": 0.5
+ },
+ "tags": "wsA:0.5,wlP:3,wlH:2,wlH2:6,wlH3:1,wlHS:6,aH:8,aFG:8,bH:8,bFG:8,dH:4,dFG:4",
+ "candidate_of": "fusion_F4 (932698, 1.59382)",
+ "candidate_note": "F4_calib + dFG:4 (+0.00147 over F4_calib, Val 1.47762)"
+}
