@@ -1,0 +1,10 @@
+# Track 1 inference (inference/infer.py). Rebuild environment: Python 3.13.6, PyTorch 2.14.0+cu126, CUDA 12.6;
+# the released reproduction ran on Kaggle Tesla T4 16 GB (frozen members, fine-tuned members) and an
+# RTX 4060 Laptop 8 GB (matched filter).
+torch>=2.4            # CUDA build
+numpy>=2.0
+scipy>=1.13
+soundfile>=0.12
+transformers>=4.45    # Whisper, AST, Dasheng encoders
+huggingface_hub>=0.25 # downloads the pinned backbone revisions on first use
+safetensors>=0.4
