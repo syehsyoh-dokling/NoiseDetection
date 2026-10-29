@@ -128,6 +128,12 @@ Fold-to-fold spread (`kaggle/fold_category_oof.py`, GroupKFold(5) on state/distr
 combined score: Q1 1.4912 / 1.4412 / 1.5895 / 1.3787 / 1.4806 (mean 1.476, sd 0.077); without wlP mean 1.474,
 sd 0.075 (paired difference positive on 4 of 5 folds); SED only mean 1.201, sd 0.031.
 
+Leave-one-member-out (`kaggle/member_ablation_oof.py`, pooled OOF of Q1 = 1.4787; change when the member is
+removed): bFG -0.0097, dH -0.0069, bH -0.0061, aFG -0.0035, wlH -0.0033, wlP -0.0028, wlH2 -0.0027, wlHS -0.0027,
+wlH3 +0.0001, wsA +0.0010, aH +0.0014 (the last three carry no OOF support; their weights date from v14). The 73
+natural validation clips with a library hit: 64 of 77 template events (83 %) match a reference event; on these
+clips the fused output scores 1.3047 vs 0.9519 for the SED decode alone.
+
 Recall of the 2,944 natural reference events per category (Q1 OOF, metric tolerance; predictions carry no
 category): human non-speech 0.622 (n=1,254, median duration 0.32 s), vehicle/traffic 0.282 (655, 0.70 s), animal
 0.269 (594, 0.79 s), baby/child 0.215 (265, 0.70 s), phone/signal/alarm 0.300 (110, 0.60 s), singing/music 0.225
