@@ -124,6 +124,20 @@ bFS trains on all of validation).
 | SED only | 1.2005 (.4500/.7505) | 1.1409 (.4331/.7077) | 1.3378 (.4761/.8618) |
 | Templates only | 0.8871 (.5976/.2895) | 0.0691 (.0424/.0268) | 1.9542 (.9819/.9723) |
 
+Fold-to-fold spread (`kaggle/fold_category_oof.py`, GroupKFold(5) on state/district, 500-501 clips per fold),
+combined score: Q1 1.4912 / 1.4412 / 1.5895 / 1.3787 / 1.4806 (mean 1.476, sd 0.077); without wlP mean 1.474,
+sd 0.075 (paired difference positive on 4 of 5 folds); SED only mean 1.201, sd 0.031.
+
+Recall of the 2,944 natural reference events per category (Q1 OOF, metric tolerance; predictions carry no
+category): human non-speech 0.622 (n=1,254, median duration 0.32 s), vehicle/traffic 0.282 (655, 0.70 s), animal
+0.269 (594, 0.79 s), baby/child 0.215 (265, 0.70 s), phone/signal/alarm 0.300 (110, 0.60 s), singing/music 0.225
+(40, 2.78 s), appliance/machine 0.231 (26, 6.23 s); all 0.418.
+
+Compute (Kaggle T4, from the retrain logs): one aFG fold 64-67 min, one bFG fold ~55 min, bFS 75 min; one
+fine-tuned encoder pass over the 5,517 test clips 4.5-5 min; the five frozen-backbone passes plus backbone
+downloads under 1.4 h in one T4 session; matched filter 84.6 min on the laptop GPU. The system is offline and
+non-causal (bidirectional heads, whole-clip encoders, whole-event decoding).
+
 Leaderboard lineage (submission id, combined): 921278 1.4591 (first upload) -> 924220 1.5808 (v14) -> 929944
 1.5868 (+aFG) -> 932046 1.5890 (+bH) -> 932698 1.5938 (+bFG, dH) -> 933670 1.5972 (boundary calibration) ->
 936587 1.5999 -> 991824 1.6000 -> 991838 1.6002 (Q1) -> 994586 1.6009 (+bFS:4, final). Codabench lists 47 uploads

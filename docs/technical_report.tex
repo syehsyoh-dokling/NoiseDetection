@@ -70,11 +70,11 @@ binary channels per frame (any noise plus the seven categories): 24\,\% of natur
 time with an event of another category, which the event-F1 term scores separately.
 
 \textbf{Validation protocol.} All model selection used 5-fold cross-validation grouped by state/district
-(GroupKFold; 500--501 clips, 27--29 districts per fold), to mimic a test set from unseen districts; every
-validation number below is out-of-fold (OOF) with the test decoding, the library in LOO mode and the null levels
-cross-fitted (two halves of the natural clips calibrate each other; synthetic clips use all natural clips).
-Fusion weights and decode parameters were fitted on these same OOF predictions (no nested CV), so the OOF scores
-are optimistic for those hyperparameters.
+(GroupKFold; 500--501 clips, 27--29 districts per fold), to mimic unseen test districts; every validation number
+below is out-of-fold (OOF) with the test decoding, the library in LOO mode and null levels cross-fitted (two
+halves of the natural clips calibrate each other).
+Fusion weights, decode and matcher parameters were fitted on these same OOF predictions (no nested CV), so the
+OOF scores are optimistic for those hyperparameters.
 
 \section{Proposed Method}
 \textbf{Background.} Frame-level CRNN classifiers~\cite{cakir,mesaros} are a standard approach to SED; Whisper's
@@ -86,43 +86,40 @@ use its normalised form, fast NCC~\cite{lewis}.
 \textbf{Matched filter.}\label{sec:tpl} For a test clip $x$ and template $T_i$, the matcher computes the NCC
 $c_i(s)$ at every sample lag $s$ with FFTs on the GPU. A per-template null level $\nu_i$ is the 0.999 quantile of
 $\max_s c_i(s)$ over the natural validation clips. Candidates are kept when the margin $c_i(s)-\nu_i\ge 0.1$ and
-selected greedily by margin with at most 30\,\% mutual overlap. In LOO mode on validation the matcher alone scores
-F1 0.9819 / Dice 0.9723 on the 695 synthetic clips (Table~\ref{tab:comp}); it fires on 687 of them and on 73 of
-the 1,806 natural clips.
+selected greedily by margin with at most 30\,\% mutual overlap. In LOO mode the matcher alone scores F1 0.9819 /
+Dice 0.9723 on the 695 synthetic clips (Table~\ref{tab:comp}); it fires on 687 of them and on 73 of the 1,806
+natural clips.
 
 \begin{table}[t]
 \caption{The twelve members. Head: BiGRU (hidden 192, dropout 0.3) + linear to 8 channels; binary cross-entropy
 (masked to the clip's frames, per-channel weights as in the code), SpecAugment-style masking~\cite{specaug},
 AdamW~\cite{adamw} (wd $10^{-2}$), one-cycle peak $10^{-3}$, last epoch kept, 5 district folds (test = mean of
-the 5 fold heads). V validation folds, G Gold, S Silver (w 0.4), P pseudo-labels (w 0.5). ft = encoder fine-tuned
-(lr $2\!\times\!10^{-5}$, head $10^{-3}$, fp16 autocast, gradient checkpointing).}
+the 5 fold heads). V validation folds, G Gold, S Silver (w 0.4), P pseudo-labels (w 0.5). W-S / W-L = whisper-small
+/ whisper-large-v3. Encoders frozen unless ft = fine-tuned (lr $2\!\times\!10^{-5}$, head $10^{-3}$, fp16
+autocast, gradient checkpointing; $^{*}$patch embedding frozen); crop in frames (fr) or seconds; wlH/wlH2/wlH3:
+seeds 0/1/2.}
 \label{tab:members}
 \centering
 \scriptsize
-\setlength{\tabcolsep}{2pt}
-\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{@{}llllll@{}}
 \toprule
-Tag & Encoder & Layers & Data & Ep. / batch / crop & $w$ \\
+Tag & Encoder & Layers & Data & Ep/bs/crop & $w$ \\
 \midrule
-wsA & whisper-small, frozen & 3,6,9,12 & V & 25 / 16 / 600 fr & 0.5 \\
-wlP & whisper-large-v3, frozen & 8,16,24,32 & V+P & 25 / 16 / 600 fr & 3 \\
-wlH/wlH2/wlH3 & whisper-large-v3, frozen & 8,16,24,32 & V+G & 8 / 8 / 400 fr (seed 0/1/2) & 2/6/1 \\
-wlHS & whisper-large-v3, frozen & 8,16,24,32 & V+G+S & 6 / 8 / 400 fr & 6 \\
-aH, bH, dH & AST, BEATs, Dasheng, frozen & 4,8,12 & V+G & 8 / 8 / 400 fr & 8, 8, 4 \\
-aFG & AST, all 12 blocks ft & 4,8,12 & V+G & 3 / 8 / 10.24 s & 8 \\
-bFG & BEATs ft, patch embed frozen & 4,8,12 & V+G & 3 / 8 / 10.24 s & 8 \\
-bFS & BEATs ft, no hold-out & 4,8,12 & all V+G+S & 2 / 8 / 10.24 s & 4 \\
+wsA & W-S & 3,6,9,12 & V & 25/16/600 fr & 0.5 \\
+wlP & W-L & 8,16,24,32 & V+P & 25/16/600 fr & 3 \\
+wlH/wlH2/wlH3 & W-L & 8,16,24,32 & V+G & 8/8/400 fr & 2/6/1 \\
+wlHS & W-L & 8,16,24,32 & V+G+S & 6/8/400 fr & 6 \\
+aH/bH/dH & AST/BEATs/Dasheng & 4,8,12 & V+G & 8/8/400 fr & 8/8/4 \\
+aFG & AST ft (12 blocks) & 4,8,12 & V+G & 3/8/10.24 s & 8 \\
+bFG & BEATs ft$^{*}$ & 4,8,12 & V+G & 3/8/10.24 s & 8 \\
+bFS & BEATs ft$^{*}$, no hold-out & 4,8,12 & all V+G+S & 2/8/10.24 s & 4 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \textbf{SED ensemble.}\label{sec:sed} Table~\ref{tab:members} lists the members. The ensemble probability is the
-weighted mean
-\begin{equation}
-p = \Big(\sum\nolimits_m w_m p_m\Big)\Big/\sum\nolimits_m w_m .
-\end{equation}
-The weights of the eleven members with OOF predictions were set by coordinate descent over a coarse grid on the
+weighted mean $p=\sum_m w_m p_m/\sum_m w_m$. The weights of the eleven members with OOF predictions were set by coordinate descent over a coarse grid on the
 natural clips (\texttt{tune\_weights.py}; the matcher dominates the synthetic ones); bFS's weight was a leaderboard
 probe. Members were added one at a time; our working rule was that a candidate had to raise the pooled OOF score
 with at least four of five district folds up before it was given one upload (``one-slot probe''), which decided;
@@ -147,9 +144,8 @@ one fine-tuned encoder pass over the 5,517 test clips 4.5--5\,min (about 55\,min
 frozen-backbone passes plus downloads under 1.4\,h; the matched filter 84.6\,min on the laptop GPU (FFT up to
 $2^{19}$). Pretrained encoders: openai/whisper-small and
 whisper-large-v3~\cite{whisper} (Apache\,2.0), MIT/ast-finetuned-audioset-10-10-0.4593~\cite{ast} (BSD\,3), BEATs
-iter3+ AS2M~\cite{beats} (MIT), mispeech/dasheng-base~\cite{dasheng} (Apache\,2.0); all public. The original
-encoders are not redistributed; the eleven fine-tuned AST/BEATs checkpoints are released as derivatives under
-BSD\,3 / MIT with the original notices.
+iter3+ AS2M~\cite{beats} (MIT), mispeech/dasheng-base~\cite{dasheng} (Apache\,2.0); the originals are not
+redistributed, the eleven fine-tuned checkpoints are released as derivatives with the original notices.
 
 \section{Results and Conclusion}\label{sec:res}
 \begin{table}[t]
@@ -188,23 +184,22 @@ leaderboard noise we did not quantify.
 \begin{table}[t]
 \caption{OOF component scores of Q1 on validation: combined (F1 / Dice) on all 2,501, the 1,806 natural and the
 695 synthetic clips; Folds: mean $\pm$ sd over the 5 district folds (ranges 1.379--1.590, 1.378--1.583,
-1.169--1.243). LOO library, cross-fitted nulls.}
+1.169--1.243). ``retrained ft'': Q1 with the retrained aFG/bFG. LOO library, cross-fitted nulls.}
 \label{tab:comp}
 \centering
 \scriptsize
-\setlength{\tabcolsep}{1.5pt}
-\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{1.3pt}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 System & All & Natural & Synthetic & Folds \\
 \midrule
-Q1 full & 1.4787 (.6894/.7894) & 1.1570 (.4465/.7105) & 1.9868 (.9925/.9943) & 1.476$\pm$.077 \\
-\ \ without wlP & 1.4759 (.6872/.7887) & 1.1527 (.4431/.7096) & 1.9866 (.9923/.9943) & 1.474$\pm$.075 \\
-\ \ retrained aFG/bFG & 1.4771 (.6886/.7885) & 1.1542 (.4450/.7092) & 1.9869 (.9925/.9944) & -- \\
-SED only & 1.2005 (.4500/.7505) & 1.1409 (.4331/.7077) & 1.3378 (.4761/.8618) & 1.201$\pm$.031 \\
-Templates only & 0.8871 (.5976/.2895) & 0.0691 (.0424/.0268) & 1.9542 (.9819/.9723) & -- \\
+Q1 full & 1.4787 (.689/.789) & 1.1570 (.447/.711) & 1.9868 (.993/.994) & 1.476$\pm$.077 \\
+\ \ no wlP & 1.4759 (.687/.789) & 1.1527 (.443/.710) & 1.9866 (.992/.994) & 1.474$\pm$.075 \\
+\ \ retrained ft & 1.4771 (.689/.789) & 1.1542 (.445/.709) & 1.9869 (.993/.994) & -- \\
+SED only & 1.2005 (.450/.751) & 1.1409 (.433/.708) & 1.3378 (.476/.862) & 1.201$\pm$.031 \\
+Templates & 0.8871 (.598/.290) & 0.0691 (.042/.027) & 1.9542 (.982/.972) & -- \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{table}[t]
@@ -240,7 +235,7 @@ the SED alone 1.3378; on natural clips the SED alone gives 1.1409, the matcher a
 +0.016 (template events in the 73 natural clips with a hit). wlP is worth +0.0028 pooled; the fold spread (sd
 0.077) is far larger, but the paired difference is positive on 4 of 5 folds (+0.0066 to $-$0.0008).
 Table~\ref{tab:cat} shows where the natural-clip F1 of 0.45 is lost: 62\,\% of human non-speech events (short,
-median 0.32\,s) are recovered but only 22--30\,\% of vehicle, animal, baby, alarm, music and machine events, which
+median 0.32\,s) are recovered but only 21--30\,\% of vehicle, animal, baby, alarm, music and machine events, which
 are longer and must meet the 20\,\% tolerance at both ends (on a pre-v14 ensemble only 12.9\,\% of natural
 reference events were truly missed, 52\,\% failed a boundary tolerance). Also tried and absent from the final
 system: a soft-Dice loss term (wlHSD,
@@ -252,28 +247,28 @@ rejection was not uniformly recorded).
 all cached test probabilities and the test template candidates; the 45 frozen fold heads, configurations,
 template library and scored zip survived. We retrained aFG, bFG and bFS with the identical scripts and their
 fixed seeds on Kaggle T4 GPUs (aFG and bFG folds 0--2 were originally trained on the laptop GPU), re-ran the
-matcher, and recomputed the frozen members from the released heads and re-downloaded public encoders. The
-retrained aFG/bFG give 1.4771 OOF against 1.4787 (Table~\ref{tab:comp}); the rebuilt submission flags the same
+matcher and recomputed the frozen members from the released heads and re-downloaded encoders. The retrained
+aFG/bFG give 1.4771 OOF against 1.4787 (Table~\ref{tab:comp}); the rebuilt submission flags the same
 2,164 clips as synthetic-like, is identical on 41.8\,\% of the clips (2,008 of 2,164 synthetic-like, 298 of 3,353
 natural-like; 13,442 vs 13,451 events) and scores 1.9858 (F1 0.9943 / Dice 0.9915) under the metric with the
 scored file as reference. The released fine-tuned checkpoints (eleven files, 3.96\,GB, release assets) are thus
 not bit-identical to the scored ones (different GPU, nondeterministic kernels); bFS has no OOF estimate, so its
-equivalence rests on that agreement. The pseudo-label file and teacher heads of wlP are not released.
+equivalence rests on that agreement. The pseudo-label file and teacher heads of wlP are not released: wlP ships as
+its five trained heads, so inference is reproducible but retraining is not (Table~\ref{tab:comp} gives the
+ensemble without it, $-$0.0028).
 
 \textbf{Limitations.} The matched filter relies on the test set reusing the validation noise library; with fresh
 noise waveforms the SED branch alone (1.2005 OOF) would carry the score. The ensemble (five frozen backbones,
 eleven fine-tuned encoders) was chosen for score, not cost, and is offline and non-causal; no real-time variant
-was built or measured. wlP uses test audio transductively. Natural-clip event F1 (0.45 OOF, recall 0.22--0.30
-for non-human categories) is the weakest part.
+was built. wlP uses test audio transductively. Natural-clip event F1 (0.45 OOF; recall 0.21--0.30 for non-human
+categories) is the weakest part.
 
 \textbf{Conclusion.} Known-signal detection on the synthetic half and frame-level SED with per-event boundary
 placement on the natural half gave a 5th-place system, fully released.
 
 \begin{thebibliography}{9}
-\bibitem{comp} Datathon@IndoML 2026, ``Track 1: Noise event detection,'' Codabench competition 17825,
-\url{https://www.codabench.org/competitions/17825/}, 2026.
-\bibitem{vaanids} ARTPARK-IISc, ``Vaani noise event dataset,'' Hugging Face,
-\url{https://huggingface.co/datasets/ARTPARK-IISc/Vaani-Noise-Event-Dataset}, 2026.
+\bibitem{comp} Datathon@IndoML 2026, ``Track 1: Noise event detection,'' \url{codabench.org/competitions/17825}.
+\bibitem{vaanids} ARTPARK-IISc, ``Vaani noise event dataset,'' 2026, \url{huggingface.co/datasets/ARTPARK-IISc/Vaani-Noise-Event-Dataset}.
 \bibitem{vaani} S.~Pulikodan \emph{et al.}, ``VAANI: Capturing the language landscape for an inclusive digital
 India,'' arXiv:2603.28714, 2026.
 \bibitem{lee} D.-H.~Lee, ``Pseudo-label: The simple and efficient semi-supervised learning method for deep neural
