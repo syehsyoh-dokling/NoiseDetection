@@ -211,6 +211,17 @@ revision; the causes were not separated).
 `models/CHECKSUMS_finetuned.txt`) are the assets of the GitHub release `v1.0` of this repository (each is larger
 than GitHub's 100 MB file limit); place them in `models/`.
 
+Cached model outputs (no audio) are also release assets; unzip them at the repository root (they extract to
+`cache/`):
+
+| Asset | Contents | SHA-256 |
+| --- | --- | --- |
+| `cache_oof_validation.zip` (269 MB) | `oof_<tag>.pkl` out-of-fold validation probabilities of every member (incl. the retrained `aFGRT`/`bFGRT` and the rejected cH/eH/dFG) and `val_template_cands.pkl`; enough to rerun `kaggle/component_oof.py`, `fold_category_oof.py`, `member_ablation_oof.py` | `8d834e617aec4557637b88bdf017c157de95b0836709953ccd58dd3e2b9be98e` |
+| `cache_test_outputs.zip` (896 MB) | the rebuild's test probabilities of all 12 members (`test_sed_probs_<tag>.pkl`, `test_probs_<tag>_f<k>.pkl`), `test_template_cands.pkl`, `t1_syn_keys.json`, `test_durs.json`; with these, `val_template_cands.pkl` from the other asset and the template library rebuilt from the validation release, `python build_nodata.py Q1_bFSadd4` rebuilds `submissions/submission_reproduced.zip` without a GPU | `67d7f4978f182413611f3b09191de655a37e9dafc7d564f56e4bf747339665cc` |
+
+`cache/template_library.pkl` is not released: it holds waveforms cut from the validation audio, which may not be
+redistributed; `python eval_templates.py` rebuilds it from the official validation release.
+
 ## License and data
 
 Our code is released under the MIT License (`LICENSE`). `beats/` is vendored from microsoft/unilm (MIT). The
